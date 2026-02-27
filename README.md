@@ -1,6 +1,6 @@
 # Reliable Multicast File Transfer Client (RMFTC)
 
-### UDP Multicast Receiver with Custom Reliability and GTK3 Interface
+### Application-Level Reliability over UDP Multicast (C \| GTK3 \| Pthreads)
 
 ![C](https://img.shields.io/badge/C-ANSI%20C-blue)
 ![GTK3](https://img.shields.io/badge/GUI-GTK3-green)
@@ -12,23 +12,49 @@
 
 ## Overview
 
-**RMFTC** is a reliable file reception client implemented in C that
-reconstructs files transmitted over **UDP multicast**.\
-Because UDP does not provide delivery guarantees, the application
-implements a lightweight reliability layer using block tracking and loss
-detection.
+RMFTC implements an **application-level reliability protocol over UDP
+multicast**.
 
-The program joins a multicast group, receives file fragments, detects
-missing packets, and reconstructs the original file while keeping the
-interface responsive via a GTK3 graphical interface.
+The system reconstructs complete files transmitted through an unreliable
+transport channel by detecting packet loss and tracking received blocks
+using a bitmask-based mechanism.
 
-This project demonstrates practical implementation of:
+Instead of relying on TCP, this project demonstrates how reliability,
+ordering, and completion detection can be implemented manually on top of
+UDP while preserving multicast scalability.
 
--   Network programming in C
--   UDP multicast communication
--   Multithreading using POSIX threads
--   Custom reliability mechanisms over unreliable transport
--   GUI integration using GTK3
+Key technical areas demonstrated:
+
+-   Low-level socket programming in C
+-   UDP multicast networking
+-   Custom reliability mechanisms
+-   POSIX multithreading (pthreads)
+-   File reconstruction from fragmented data
+-   GTK3 graphical interface integration
+
+------------------------------------------------------------------------
+
+## Why Multicast Instead of TCP?
+
+TCP cannot efficiently distribute the same file to multiple receivers
+simultaneously, as each connection requires an independent stream and
+retransmissions.
+
+UDP multicast allows a sender to transmit data **once**, while multiple
+receivers subscribe to the stream.
+
+The challenge is reliability.
+
+This project addresses that problem by implementing reliability
+mechanisms at the application layer, enabling scalable one-to-many file
+distribution.
+
+Potential real-world applications:
+
+-   Firmware distribution to embedded systems
+-   IPTV and media streaming
+-   Software deployment in controlled enterprise networks
+-   Industrial network update systems
 
 ------------------------------------------------------------------------
 
@@ -53,28 +79,37 @@ datagrams
 **Receiver Thread** - Continuously listens for packets - Processes
 incoming fragments - Updates reception state
 
-**Reliability Layer (Bitmask)** - Tracks received packet blocks -
-Detects missing fragments - Determines completion
+**Reliability Layer (Bitmask-Based Tracking)** - Tracks received packet
+blocks - Detects missing fragments - Determines transfer completion
 
-**File Assembly** - Writes received data to correct positions - Produces
+**File Assembly** - Writes received data to correct offsets - Produces
 final reconstructed file
 
-**Graphical Interface** - GTK3 interface built using Glade - Allows
+**Graphical Interface (GTK3)** - Built using Glade - Allows
 configuration and monitoring - Displays transfer progress
 
 ------------------------------------------------------------------------
 
 ## Reliability Strategy
 
-Since UDP multicast offers no delivery guarantees, the client implements
-a custom reliability approach:
+Because UDP multicast provides no delivery guarantees, RMFTC implements:
 
-1.  Each packet corresponds to a numbered file block
-2.  A bitmask records received blocks
-3.  Missing blocks are detected
-4.  Transfer completion occurs only when all blocks are present
+1.  Block identification per packet
+2.  Bitmask tracking of received blocks
+3.  Missing fragment detection
+4.  Completion validation before file finalization
 
 This preserves multicast efficiency while ensuring file integrity.
+
+------------------------------------------------------------------------
+
+## Concurrency Model
+
+-   Main thread: GTK event loop
+-   Receiver thread: network packet processing
+
+This ensures the graphical interface remains responsive during file
+transfers.
 
 ------------------------------------------------------------------------
 
@@ -108,41 +143,47 @@ make
 
 ## Networking Requirements
 
--   Multicast enabled network
+-   Multicast-enabled network
 -   UDP traffic allowed by firewall
 -   Sender transmitting to the same multicast group and port
 
 ------------------------------------------------------------------------
 
-## Concurrency Model
-
--   Main thread: GTK event loop
--   Receiver thread: network packet processing
-
-This design keeps the interface responsive during transfers.
-
-------------------------------------------------------------------------
-
 ## Educational Scope
 
-The project covers topics commonly taught in:
+Relevant academic domains:
 
 -   Computer Networks
--   Operating Systems
 -   Distributed Systems
+-   Operating Systems
 
-Key concepts: - Multicast networking - Unreliable transport handling -
-Thread synchronization - File reassembly
+Core concepts covered:
+
+-   Multicast communication
+-   Reliability over unreliable transport
+-   Thread synchronization
+-   Fragmented file reconstruction
 
 ------------------------------------------------------------------------
 
-## Possible Future Improvements
+## Future Improvements
 
--   Negative acknowledgements (NACK)
--   Sender implementation
--   Transfer statistics
+-   NACK-based retransmission mechanism
+-   Sender-side implementation
+-   Transfer performance metrics
 -   Multiple simultaneous transfers
--   Congestion control
+-   Congestion control mechanisms
+
+------------------------------------------------------------------------
+
+## 👤 Author
+
+Diogo Neto Filipe\
+MSc Student in Electrical and Computer Engineering --- NOVA FCT\
+Interests: Computer Networks, Distributed Systems, Cybersecurity
+
+Supervised by\
+Prof. Luís Bernardo --- NOVA FCT
 
 ------------------------------------------------------------------------
 
