@@ -178,7 +178,7 @@ Core concepts covered:
 
 ## 👤 Author
 
-Diogo Neto Filipe\
+Diogo Neto Filipe and Guilherme Mendes\
 MSc Student in Electrical and Computer Engineering --- NOVA FCT\
 Interests: Computer Networks, Distributed Systems, Cybersecurity
 
